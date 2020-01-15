@@ -25,13 +25,13 @@ public abstract class Shape {
 class Square extends Shape {
     @Override
     public void draw() {
-
+        System.out.println("Square.draw()");
     }
 }
 class Circle extends Shape {
     @Override
     public void draw() {
-
+        System.out.println("Circle.draw()");
     }
 }
 

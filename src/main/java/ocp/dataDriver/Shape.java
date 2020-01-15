@@ -1,4 +1,4 @@
-package ocp.order;
+package ocp.dataDriver;
 
 import java.util.Comparator;
 import java.util.List;
@@ -11,7 +11,11 @@ import java.util.stream.Collectors;
 public abstract class Shape {
     public abstract void draw();
 
-    public abstract boolean precedes(Shape shape);
+    public boolean precedes(Shape shape) {
+        return this.order() > shape.order();
+    }
+
+    public abstract int order();
 
     public static void drawAllShapes(List<Shape> list) {
         list = list.stream().sorted(new Comparator<Shape>() {
@@ -34,9 +38,8 @@ class Circle extends Shape {
     }
 
     @Override
-    public boolean precedes(Shape shape) {
-        if (shape instanceof Square) return true;
-        else return false;
+    public int order() {
+        return 1;
     }
 }
 
@@ -48,8 +51,7 @@ class Square extends Shape {
     }
 
     @Override
-    public boolean precedes(Shape shape) {
-        if (shape instanceof Circle) return true;
-        else return false;
+    public int order() {
+        return 0;
     }
 }
