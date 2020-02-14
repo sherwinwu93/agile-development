@@ -1,4 +1,4 @@
-package templateMethod;
+package templatemethod;
 
 /**
  * @author wusd

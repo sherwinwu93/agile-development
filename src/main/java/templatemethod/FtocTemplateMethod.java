@@ -1,4 +1,4 @@
-package templateMethod.strategy;
+package templatemethod;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,28 +6,26 @@ import java.io.InputStreamReader;
 
 /**
  * @author wusd
- * @date 2020/2/10 22:06
+ * @date 2020/1/20 0:00
  */
-public class FtocStrategy implements Application {
+public class FtocTemplateMethod extends Application {
     private InputStreamReader isr;
     private BufferedReader br;
-    private boolean isDone = false;
 
     public static void main(String[] args) {
-        new ApplicationRunner(new FtocStrategy()).run();
+        (new FtocTemplateMethod()).run();
     }
-
     @Override
-    public void init() {
+    protected void init() {
         isr = new InputStreamReader(System.in);
         br = new BufferedReader(isr);
     }
 
     @Override
-    public void idle() {
+    protected void idle() {
         String fahrString = readLineAndReturnNullIfError();
         if (fahrString == null || fahrString.length() == 0)
-            isDone = true;
+            setDone();
         else {
             double fahr = Double.parseDouble(fahrString);
             double celcius = 5.0 / 9.0 * (fahr - 32);
@@ -35,14 +33,8 @@ public class FtocStrategy implements Application {
         }
     }
 
-    @Override
-    public void cleanup() {
+    protected void cleanUp() {
         System.out.println("ftoc exit");
-    }
-
-    @Override
-    public boolean done() {
-        return isDone;
     }
 
     private String readLineAndReturnNullIfError() {

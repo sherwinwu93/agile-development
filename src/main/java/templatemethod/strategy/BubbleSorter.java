@@ -1,4 +1,4 @@
-package templateMethod.strategy;
+package templatemethod.strategy;
 
 /**
  * @author wusd

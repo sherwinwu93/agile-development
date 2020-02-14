@@ -1,4 +1,4 @@
-package templateMethod.refac;
+package templatemethod.refac;
 
 /**
  * @author wusd
