@@ -1,6 +1,4 @@
-package salaryimpl.salaried;
-
-import salaryimpl.*;
+package salaryimpl;
 
 /**
  * @author wusd

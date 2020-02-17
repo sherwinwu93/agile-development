@@ -1,4 +1,4 @@
-package salaryimpl.database;
+package salaryimpl;
 
 import salaryimpl.Employee;
 
@@ -13,6 +13,8 @@ public abstract class PayrollDatabase {
     public abstract Employee getEmployee(int empId);
     public abstract void addEmployee(int empId, Employee employee);
     public abstract void deleteEmployee(int empId);
+    public abstract void addUnionMember(int empId, Employee employee);
+    public abstract Employee getUnionMember(int empId);
     public void clear() {
         employeeMap.clear();
     }

@@ -1,8 +1,5 @@
 package salaryimpl;
 
-import salaryimpl.database.PayrollDatabase;
-import salaryimpl.database.PayrollDatabaseImpl;
-
 /**
  * @author wusd
  * @date 2020/2/15 22:48
@@ -11,7 +8,6 @@ public abstract class AddEmployeeTransactionImpl implements AddEmployeeTransacti
     protected int empId;
     protected String name;
     protected String address;
-    public PayrollDatabase payrollDatabase = PayrollDatabaseImpl.getInstance();
 
     public AddEmployeeTransactionImpl() {
     }
@@ -31,6 +27,6 @@ public abstract class AddEmployeeTransactionImpl implements AddEmployeeTransacti
         e.setClassification(pc);
         e.setSchedule(ps);
         e.setMethod(pm);
-        payrollDatabase.addEmployee(empId, e);
+        PayrollDatabaseImpl.instance.addEmployee(empId, e);
     }
 }

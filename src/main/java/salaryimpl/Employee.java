@@ -14,6 +14,7 @@ public class Employee {
     private PaymentClassification classification;
     private PaymentSchedule schedule;
     private PaymentMethod method;
+    private Affiliation affiliation;
 
     public Employee(int empId, String name, String address) {
         this.empId = empId;

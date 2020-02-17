@@ -1,7 +1,7 @@
-package salaryimpl.hourly;
+package salaryimpl;
 
 import lombok.Data;
-import salaryimpl.PaymentClassification;
+import org.joda.time.DateTime;
 
 /**
  * @author wusd
@@ -13,5 +13,10 @@ public class HourlyClassification implements PaymentClassification {
 
     public HourlyClassification(Double hourlyRate) {
         this.hourlyRate = hourlyRate;
+    }
+    public void addTimeCard(TimeCard timeCard) {
+    }
+    public TimeCard getTimeCard(DateTime date) {
+        return null;
     }
 }

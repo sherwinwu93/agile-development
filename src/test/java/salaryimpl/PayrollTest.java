@@ -1,21 +1,10 @@
 package salaryimpl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.junit.Test;
-import salaryimpl.commissioned.AddCommissionedEmployee;
-import salaryimpl.commissioned.AddCommissionedEmployeeImpl;
-import salaryimpl.commissioned.BlweeklySchedule;
-import salaryimpl.commissioned.CommissionedClassification;
-import salaryimpl.database.PayrollDatabase;
-import salaryimpl.database.PayrollDatabaseImpl;
-import salaryimpl.hourly.AddHourlyEmployee;
-import salaryimpl.hourly.AddHourlyEmployeeImpl;
-import salaryimpl.hourly.HourlyClassification;
-import salaryimpl.hourly.WeeklySchedule;
-import salaryimpl.salaried.AddSalariedEmployee;
-import salaryimpl.salaried.AddSalariedEmployeeImpl;
-import salaryimpl.salaried.MonthlySchedule;
-import salaryimpl.salaried.SalariedClassification;
+
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -24,7 +13,7 @@ import static org.junit.Assert.*;
  * @date 2020/2/15 21:50
  */
 public class PayrollTest {
-    PayrollDatabase payrollDatabase = PayrollDatabaseImpl.getInstance();
+    PayrollDatabase payrollDatabase = PayrollDatabaseImpl.instance;
     @Test
     public void addSalariedEmployee() {
         int empId = 1;
@@ -111,10 +100,49 @@ public class PayrollTest {
         Employee e = payrollDatabase.getEmployee(empId);
         assertTrue(e != null);
 
-        DeleteEmployeeTransaction dt = new DeleteEmployeeTransaction(empId);
+        DeleteEmployeeTransaction dt = new DeleteEmployeeTransactionImpl(empId);
         dt.execute();
 
         e = payrollDatabase.getEmployee(empId);
         assertTrue(e == null);
+    }
+
+    @Test
+    public void timeCardTransaction() {
+        DateTime date = DateTime.parse("2001-10-31");
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+
+        TimeCardTransaction tct = new TimeCardTransactionImpl(date, 8.0, empId);
+        tct.execute();
+        Employee e = payrollDatabase.getEmployee(empId);
+        assertNotNull(e);
+        PaymentClassification pc = e.getClassification();
+        assertTrue(pc instanceof  HourlyClassification);
+        HourlyClassification hc = (HourlyClassification) pc;
+        //创建个TimeCard并增加到PaymentClassification
+        TimeCard tc = hc.getTimeCard(date);
+        assertNotNull(tc);
+        assertEquals(8.0, tc.getHours(), .001);
+    }
+
+    @Test
+    public void addServiceCharge() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        Employee e = payrollDatabase.getEmployee(empId);
+        assertNotNull(e);
+        UnionAffiliation af = new UnionAffiliation(empId,12.5);
+        e.setAffiliation(af);
+        int memberId = 86;//MaxwellSmart
+        payrollDatabase.addUnionMember(memberId, e);
+        ServiceChargeTransaction sct = new ServiceChargeTransactionImpl(memberId,
+                DateTime.parse("2001-11-01"), 12.95);
+        sct.execute();
+        ServiceCharge sc = af.getServiceCharge(DateTime.parse("2001-11-01"));
+        assertNotNull(sc);
+        assertEquals(12.95, sc.getAmount(), .001);
     }
 }

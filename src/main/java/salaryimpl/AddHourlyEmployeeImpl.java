@@ -1,8 +1,4 @@
-package salaryimpl.hourly;
-
-import salaryimpl.AddEmployeeTransactionImpl;
-import salaryimpl.PaymentClassification;
-import salaryimpl.PaymentSchedule;
+package salaryimpl;
 
 /**
  * @author wusd

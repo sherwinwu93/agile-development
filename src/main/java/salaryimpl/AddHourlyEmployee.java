@@ -1,4 +1,4 @@
-package salaryimpl.hourly;
+package salaryimpl;
 
 import salaryimpl.AddEmployeeTransaction;
 

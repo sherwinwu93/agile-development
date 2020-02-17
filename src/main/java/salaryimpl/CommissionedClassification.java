@@ -1,4 +1,4 @@
-package salaryimpl.commissioned;
+package salaryimpl;
 
 import lombok.Data;
 import salaryimpl.PaymentClassification;

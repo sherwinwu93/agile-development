@@ -1,9 +1,4 @@
-package salaryimpl.commissioned;
-
-import salaryimpl.AddEmployeeTransaction;
-import salaryimpl.AddEmployeeTransactionImpl;
-import salaryimpl.PaymentClassification;
-import salaryimpl.PaymentSchedule;
+package salaryimpl;
 
 /**
  * @author wusd

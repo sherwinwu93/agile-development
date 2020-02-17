@@ -1,19 +1,11 @@
-package salaryimpl.database;
-
-import salaryimpl.Employee;
+package salaryimpl;
 
 /**
  * @author wusd
  * @date 2020/2/15 22:09
  */
 public class PayrollDatabaseImpl extends PayrollDatabase {
-    public static PayrollDatabase payrollDatabase = null;
-    public static PayrollDatabase getInstance() {
-        if (payrollDatabase == null) {
-            payrollDatabase = new PayrollDatabaseImpl();
-        }
-        return payrollDatabase;
-    }
+    public static PayrollDatabase instance = new PayrollDatabaseImpl();
     private PayrollDatabaseImpl(){}
     @Override
     public Employee getEmployee(int empId) {
@@ -28,5 +20,15 @@ public class PayrollDatabaseImpl extends PayrollDatabase {
     @Override
     public void deleteEmployee(int empId) {
         employeeMap.remove(empId);
+    }
+
+    @Override
+    public void addUnionMember(int empId, Employee employee) {
+
+    }
+
+    @Override
+    public Employee getUnionMember(int empId) {
+        return null;
     }
 }
