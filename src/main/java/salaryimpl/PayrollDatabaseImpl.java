@@ -28,6 +28,11 @@ public class PayrollDatabaseImpl extends PayrollDatabase {
     }
 
     @Override
+    public void removeUnionMember(int empId) {
+
+    }
+
+    @Override
     public Employee getUnionMember(int empId) {
         return null;
     }

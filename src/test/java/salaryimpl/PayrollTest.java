@@ -4,8 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import java.util.Date;
-
 import static org.junit.Assert.*;
 
 /**
@@ -144,5 +142,57 @@ public class PayrollTest {
         ServiceCharge sc = af.getServiceCharge(DateTime.parse("2001-11-01"));
         assertNotNull(sc);
         assertEquals(12.95, sc.getAmount(), .001);
+    }
+    @Test
+    public void changeNameTransaction() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        ChangeNameTransaction cnt = new ChangeNameTransactionImpl(empId, "Bob");
+        cnt.execute();
+        Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
+        assertNotNull(e);
+        assertEquals("Bob", e.getName());
+    }
+
+    @Test
+    public void changeHourlyTransaction() {
+        int empId = 3;
+        AddCommissionedEmployee t = new AddCommissionedEmployeeImpl(empId, "Lance", "Home",
+                2500.0,  3.2);
+        t.execute();
+        ChangeHourlyTransaction cht = new ChangeHourlyTransactionImpl(empId, 27.52);
+        cht.execute();
+        Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
+        assertNotNull(e);
+        PaymentClassification pc = e.getClassification();
+        assertNotNull(pc);
+        assertTrue(pc instanceof HourlyClassification);
+        HourlyClassification hc = (HourlyClassification) pc;
+        assertEquals(27.52, hc.getHourlyRate(), .001);
+        PaymentSchedule ps = e.getSchedule();
+        assertTrue(ps instanceof WeeklySchedule);
+        WeeklySchedule ws = (WeeklySchedule) ps;
+    }
+    @Test
+    public void changeMemberTransaction() {
+        int empId = 2;
+        int memberId = 7734;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 99.42);
+        cmt.execute();
+        Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
+        assertNotNull(e);
+
+        Affiliation af = e.getAffiliation();
+        assertNotNull(af);
+        assertTrue(af instanceof UnionAffiliation);
+        UnionAffiliation uf  = (UnionAffiliation) af;
+        assertEquals(99.42, uf.getDues(), .001);
+        Employee member = PayrollDatabaseImpl.instance.getUnionMember(memberId);
+        assertNotNull(member);
+        assertTrue(e == member);
+
     }
 }

@@ -14,6 +14,7 @@ public abstract class PayrollDatabase {
     public abstract void addEmployee(int empId, Employee employee);
     public abstract void deleteEmployee(int empId);
     public abstract void addUnionMember(int empId, Employee employee);
+    public abstract void removeUnionMember(int empId);
     public abstract Employee getUnionMember(int empId);
     public void clear() {
         employeeMap.clear();

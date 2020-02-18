@@ -12,6 +12,7 @@ public class UnionAffiliation implements Affiliation {
     protected int memberId;
     protected double charge;
     protected ServiceCharge serviceCharge;
+    protected double dues;
 
     public UnionAffiliation(int memberId, double charge) {
         this.memberId = memberId;
