@@ -1,5 +1,7 @@
 package salaryimpl;
 
+import java.util.List;
+
 /**
  * @author wusd
  * @date 2020/2/15 22:09
@@ -34,6 +36,11 @@ public class PayrollDatabaseImpl extends PayrollDatabase {
 
     @Override
     public Employee getUnionMember(int empId) {
+        return null;
+    }
+
+    @Override
+    public List<Employee> getAllEmployeeIds(List<Integer> empIds) {
         return null;
     }
 }

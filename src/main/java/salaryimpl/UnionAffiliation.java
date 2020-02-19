@@ -3,6 +3,8 @@ package salaryimpl;
 import lombok.Data;
 import org.joda.time.DateTime;
 
+import java.util.Date;
+
 /**
  * @author wusd
  * @date 2020/2/17 14:57
@@ -24,5 +26,23 @@ public class UnionAffiliation implements Affiliation {
     }
     public void addServiceCharge(DateTime date, double charge) {
 
+    }
+
+    @Override
+    public double calculateDeductions(Paycheck pc) {
+        double totalDues = 0;
+        int fridays = numberOfFridaysInPayPeriod(pc.getPayPeriodStartDate(), pc.getPayPeriodEndDate());
+        totalDues = dues * fridays;
+        return totalDues;
+    }
+
+    public int numberOfFridaysInPayPeriod(DateTime payPeriodStart, DateTime payPeriodEnd) {
+        int fridays = 0;
+        for (DateTime day = payPeriodStart ; day.compareTo(payPeriodEnd) <= 0; day = day.plusDays(1)) {
+            if (day.getDayOfWeek() == 5) {
+                fridays++;
+            }
+        }
+        return fridays;
     }
 }

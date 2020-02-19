@@ -16,4 +16,9 @@ public class CommissionedClassification implements PaymentClassification {
         this.salary = salary;
         this.commissionRate = commissionRate;
     }
+
+    @Override
+    public double calculatePay(Paycheck pc) {
+        return 0;
+    }
 }

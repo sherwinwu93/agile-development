@@ -3,6 +3,7 @@ package salaryimpl;
 import salaryimpl.Employee;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,6 +17,7 @@ public abstract class PayrollDatabase {
     public abstract void addUnionMember(int empId, Employee employee);
     public abstract void removeUnionMember(int empId);
     public abstract Employee getUnionMember(int empId);
+    public abstract List<Employee> getAllEmployeeIds(List<Integer> empIds);
     public void clear() {
         employeeMap.clear();
     }

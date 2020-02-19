@@ -17,4 +17,9 @@ public class SalariedClassification implements PaymentClassification {
     public SalariedClassification(Double salary) {
         this.salary = salary;
     }
+
+    @Override
+    public double calculatePay(Paycheck pc) {
+        return 0;
+    }
 }

@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import java.util.Date;
+
 import static org.junit.Assert.*;
 
 /**
@@ -12,6 +14,7 @@ import static org.junit.Assert.*;
  */
 public class PayrollTest {
     PayrollDatabase payrollDatabase = PayrollDatabaseImpl.instance;
+
     @Test
     public void addSalariedEmployee() {
         int empId = 1;
@@ -117,7 +120,7 @@ public class PayrollTest {
         Employee e = payrollDatabase.getEmployee(empId);
         assertNotNull(e);
         PaymentClassification pc = e.getClassification();
-        assertTrue(pc instanceof  HourlyClassification);
+        assertTrue(pc instanceof HourlyClassification);
         HourlyClassification hc = (HourlyClassification) pc;
         //创建个TimeCard并增加到PaymentClassification
         TimeCard tc = hc.getTimeCard(date);
@@ -132,7 +135,7 @@ public class PayrollTest {
         t.execute();
         Employee e = payrollDatabase.getEmployee(empId);
         assertNotNull(e);
-        UnionAffiliation af = new UnionAffiliation(empId,12.5);
+        UnionAffiliation af = new UnionAffiliation(empId, 12.5);
         e.setAffiliation(af);
         int memberId = 86;//MaxwellSmart
         payrollDatabase.addUnionMember(memberId, e);
@@ -143,6 +146,7 @@ public class PayrollTest {
         assertNotNull(sc);
         assertEquals(12.95, sc.getAmount(), .001);
     }
+
     @Test
     public void changeNameTransaction() {
         int empId = 2;
@@ -159,7 +163,7 @@ public class PayrollTest {
     public void changeHourlyTransaction() {
         int empId = 3;
         AddCommissionedEmployee t = new AddCommissionedEmployeeImpl(empId, "Lance", "Home",
-                2500.0,  3.2);
+                2500.0, 3.2);
         t.execute();
         ChangeHourlyTransaction cht = new ChangeHourlyTransactionImpl(empId, 27.52);
         cht.execute();
@@ -174,6 +178,7 @@ public class PayrollTest {
         assertTrue(ps instanceof WeeklySchedule);
         WeeklySchedule ws = (WeeklySchedule) ps;
     }
+
     @Test
     public void changeMemberTransaction() {
         int empId = 2;
@@ -188,11 +193,203 @@ public class PayrollTest {
         Affiliation af = e.getAffiliation();
         assertNotNull(af);
         assertTrue(af instanceof UnionAffiliation);
-        UnionAffiliation uf  = (UnionAffiliation) af;
+        UnionAffiliation uf = (UnionAffiliation) af;
         assertEquals(99.42, uf.getDues(), .001);
         Employee member = PayrollDatabaseImpl.instance.getUnionMember(memberId);
         assertNotNull(member);
         assertTrue(e == member);
+    }
 
+    @Test
+    public void paySingleSalariedEmployee() {
+        int empId = 1;
+        AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-30");
+        PaydayTransaction pt = new PaydayTransactionImpl();
+        pt.execute();
+        Paycheck pc = pt.getPaycheck(empId);
+        assertNotNull(pc);
+        assertTrue(pc.getPayDate().equals(payDate));
+        assertEquals(1000.00, pc.getGrossPay(), .001);
+        assertTrue("Hold".equals(pc.getField("Disposition")));
+        assertEquals(0.0, pc.getDeductions(), .001);
+        assertEquals(1000.00, pc.getNetPay(), .001);
+    }
+
+    @Test
+    public void paySingleSalariedEmployeeOnWrongDate() {
+        int empId = 1;
+        AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-29");
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        Paycheck pc = pt.getPaycheck(empId);
+        assertNotNull(pc);
+    }
+
+    @Test
+    public void paySingleHourlyEmployeeNoTimeCards() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-09");
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        validatePaycheck(pt, empId, payDate, 0.0);
+    }
+
+    @Test
+    public void paySingleHourlyEmployeeOneTimeCard() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-09");
+
+        TimeCardTransaction tc = new TimeCardTransactionImpl(payDate, 2.0, empId);
+        tc.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        validatePaycheck(pt, empId, payDate, 30.5);
+    }
+
+    @Test
+    public void paySingleHourlyEmployeeOvertimeOneTimeCard() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-09");
+
+        TimeCardTransaction tc = new TimeCardTransactionImpl(payDate, 9.0, empId);
+        tc.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        validatePaycheck(pt, empId, payDate, (8 + 1.5) * 15.25);
+    }
+
+    @Test
+    public void paySingleHourlyEmployeeOnWrongDate() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-08");
+
+        TimeCardTransaction tc = new TimeCardTransactionImpl(payDate, 9.0, empId);
+        tc.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+
+        Paycheck pc = pt.getPaycheck(empId);
+        assertNull(pc);
+    }
+
+    @Test
+    public void paySingleHourlyEmployeeTwoTimeCards() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-09");
+
+        TimeCardTransaction tc = new TimeCardTransactionImpl(payDate, 2.0, empId);
+        tc.execute();
+        TimeCardTransaction tc2 = new TimeCardTransactionImpl(DateTime.parse("2001-11-08"), 5.0, empId);
+        tc2.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+    }
+
+    @Test
+    public void paySingleHourlyEmployeeWithTimeCardsSpanningTwoPayPeriods() {
+        int empId = 2;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
+        t.execute();
+        DateTime payDate = DateTime.parse("2001-11-09");
+        DateTime dateInPreviousPayPeriod = DateTime.parse("2001-11-02");
+
+        TimeCardTransaction tc = new TimeCardTransactionImpl(payDate, 2.0, empId);
+        tc.execute();
+        TimeCardTransaction tc2 = new TimeCardTransactionImpl(dateInPreviousPayPeriod, 5.0, empId);
+        tc2.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        validatePaycheck(pt, empId, payDate, 2 * 15.25);
+    }
+
+    @Test
+    public void salariedSalariedUnionMemberDues() {
+        int empId = 1;
+        AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
+        t.execute();
+        int memberId = 7734;
+        ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 9.42);
+        cmt.execute();
+        DateTime payDate = DateTime.parse("2001-11-30");
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        validatePaycheck(pt, empId, payDate, 1000.00);
+    }
+
+    @Test
+    public void hourlyUnionMemberServiceCharge() {
+        int empId = 1;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.24);
+        t.execute();
+        int memberId = 7734;
+        ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 9.42);
+        cmt.execute();
+        DateTime payDate = DateTime.parse("2001-11-09");
+        ServiceChargeTransaction sct = new ServiceChargeTransactionImpl(memberId, payDate, 19.42);
+        sct.execute();
+        TimeCardTransaction tct = new TimeCardTransactionImpl(payDate, 8.0, empId);
+        tct.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        Paycheck pc = pt.getPaycheck(empId);
+        assertNotNull(pc);
+        assertEquals(pc.getPayPeriodEndDate(), payDate);
+        assertEquals(8 * 15.24, pc.getGrossPay(), .001);
+        assertEquals("Hold", pc.getField("Disposition"));
+        assertEquals(9.42 + 19.42, pc.getDeductions(), .001);
+        assertEquals((8 * 15.42) - (9.42 + 19.42), pc.getNetPay(), .001);
+    }
+    @Test
+    public void serviceChargesSpanningMultiplePayPeriods() {
+        int empId = 1;
+        AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.24);
+        t.execute();
+        int memberId = 7734;
+        ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 9.42);
+        cmt.execute();
+        DateTime earlyDate = DateTime.parse("2001-11-02");
+        DateTime payDate = DateTime.parse("2001-11-09");
+        DateTime lateDate = DateTime.parse("2001-11-16");
+        ServiceChargeTransaction sct = new ServiceChargeTransactionImpl(memberId, payDate, 19.42);
+        sct.execute();
+        ServiceChargeTransaction sctEarly = new ServiceChargeTransactionImpl(memberId, earlyDate, 100.00);
+        sctEarly.execute();
+        ServiceChargeTransaction sctLate = new ServiceChargeTransactionImpl(memberId, lateDate, 200.00);
+        sctLate.execute();
+        TimeCardTransaction tct = new TimeCardTransactionImpl(payDate, 8.0, empId);
+        tct.execute();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
+        pt.execute();
+        Paycheck pc = pt.getPaycheck(empId);
+        assertNotNull(pc);
+        assertEquals(pc.getPayPeriodEndDate(), payDate);
+        assertEquals(8 * 15.24, pc.getGrossPay(), .001);
+        assertEquals("Hold", pc.getField("Disposition"));
+        assertEquals(9.42 + 19.42, pc.getDeductions(), .001);
+        assertEquals((8 * 15.24)- (9.42 + 19.42), pc.getNetPay(),.001);
+    }
+
+    public void validatePaycheck(PaydayTransaction pt, int empId, DateTime payDate, double pay) {
+        Paycheck pc = pt.getPaycheck(empId);
+        assertNotNull(pc);
+        assertEquals(pc.getPayPeriodEndDate(), payDate);
+        assertEquals(pay, pc.getGrossPay(), .001);
+        assertEquals("Hold", pc.getField("Disposition"));
+        assertEquals(0.0, pc.getDeductions(), .001);
+        assertEquals(pay, pc.getNetPay(), .001);
     }
 }
