@@ -1,27 +1,35 @@
 package salaryimpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wusd
  * @date 2020/2/15 22:09
  */
-public class PayrollDatabaseImpl extends PayrollDatabase {
+public class PayrollDatabaseImpl implements PayrollDatabase {
+    protected static Map<Integer, Employee> employees = new HashMap<>();
+    protected static Map<Integer, Integer> empIds = new HashMap<>();
+    // 使用singleton和monostate具有不必要复杂性的臭味
     public static PayrollDatabase instance = new PayrollDatabaseImpl();
-    private PayrollDatabaseImpl(){}
+
+    private PayrollDatabaseImpl() {
+    }
+
     @Override
     public Employee getEmployee(int empId) {
-        return employeeMap.get(empId);
+        return employees.get(empId);
     }
 
     @Override
     public void addEmployee(int empId, Employee employee) {
-        employeeMap.put(empId, employee);
+        employees.put(empId, employee);
     }
 
     @Override
     public void deleteEmployee(int empId) {
-        employeeMap.remove(empId);
+        employees.remove(empId);
     }
 
     @Override
@@ -42,5 +50,10 @@ public class PayrollDatabaseImpl extends PayrollDatabase {
     @Override
     public List<Employee> getAllEmployeeIds(List<Integer> empIds) {
         return null;
+    }
+
+    @Override
+    public void clear() {
+        employees.clear();
     }
 }

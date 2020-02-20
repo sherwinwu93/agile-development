@@ -14,7 +14,7 @@ import java.util.Set;
 @Data
 public class HourlyClassification implements PaymentClassification {
     protected Double hourlyRate;
-    protected Map<DateTime, TimeCard> timeCardMap;
+    protected Map<DateTime, TimeCard> timeCards;
 
     public HourlyClassification(Double hourlyRate) {
         this.hourlyRate = hourlyRate;
@@ -29,9 +29,9 @@ public class HourlyClassification implements PaymentClassification {
     public double calculatePay(Paycheck pc) {
         double totalPay = 0;
         DateTime payPeriod = pc.getPayDate();
-        Set<DateTime> set = timeCardMap.keySet();
+        Set<DateTime> set = timeCards.keySet();
         for (DateTime date : set) {
-            TimeCard tc = timeCardMap.get(date);
+            TimeCard tc = timeCards.get(date);
             if (isInPayPeriod(tc, payPeriod))
                 totalPay += calculatePayForTimeCard(tc);
         }

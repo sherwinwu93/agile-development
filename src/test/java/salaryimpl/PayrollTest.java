@@ -17,25 +17,28 @@ public class PayrollTest {
 
     @Test
     public void addSalariedEmployee() {
+        //增加正式工
         int empId = 1;
         AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
         t.execute();
 
+        //从数据库中获取
         Employee e = payrollDatabase.getEmployee(empId);
         assertTrue(StringUtils.equals("Bob", e.getName()));
 
+        //校验雇员类别
         PaymentClassification pc = e.getClassification();
         assertTrue(pc instanceof SalariedClassification);
         SalariedClassification sc = (SalariedClassification) pc;
-
         assertEquals(1000.00, sc.getSalary(), .001);
+
+        //校验支付安排
         PaymentSchedule ps = e.getSchedule();
         assertTrue(ps instanceof MonthlySchedule);
-        MonthlySchedule ms = (MonthlySchedule) ps;
 
+        //校验支付方式
         PaymentMethod pm = e.getMethod();
         assertTrue(pm instanceof HoldMethod);
-        HoldMethod hm = (HoldMethod) pm;
         payrollDatabase.clear();
     }
 
@@ -93,50 +96,68 @@ public class PayrollTest {
 
     @Test
     public void deleteEmployee() {
+        //增加销售员工
         int empId = 3;
         AddCommissionedEmployee t = new AddCommissionedEmployeeImpl(empId, "Jack", "City",
                 1.0, 3.0);
         t.execute();
 
         Employee e = payrollDatabase.getEmployee(empId);
-        assertTrue(e != null);
+        assertNotNull(e);
 
         DeleteEmployeeTransaction dt = new DeleteEmployeeTransactionImpl(empId);
         dt.execute();
 
         e = payrollDatabase.getEmployee(empId);
-        assertTrue(e == null);
+        assertNull(e);
     }
 
+    /**
+     * 时间卡
+     */
     @Test
     public void timeCardTransaction() {
         DateTime date = DateTime.parse("2001-10-31");
+
+        //增加钟点工
         int empId = 2;
         AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
         t.execute();
 
+        //时间卡事务
         TimeCardTransaction tct = new TimeCardTransactionImpl(date, 8.0, empId);
         tct.execute();
+
         Employee e = payrollDatabase.getEmployee(empId);
         assertNotNull(e);
+
         PaymentClassification pc = e.getClassification();
         assertTrue(pc instanceof HourlyClassification);
         HourlyClassification hc = (HourlyClassification) pc;
-        //创建个TimeCard并增加到PaymentClassification
+        //检查类别中是否有时间卡
         TimeCard tc = hc.getTimeCard(date);
         assertNotNull(tc);
         assertEquals(8.0, tc.getHours(), .001);
     }
 
+    /**
+     * 增加服务费用
+     */
     @Test
     public void addServiceCharge() {
+        //增加钟点工
         int empId = 2;
         AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
         t.execute();
+
         Employee e = payrollDatabase.getEmployee(empId);
         assertNotNull(e);
+
+        //向钟点工增加协会从属关系
         UnionAffiliation af = new UnionAffiliation(empId, 12.5);
         e.setAffiliation(af);
+
+        //执行服务费用事务.
         int memberId = 86;//MaxwellSmart
         payrollDatabase.addUnionMember(memberId, e);
         ServiceChargeTransaction sct = new ServiceChargeTransactionImpl(memberId,
@@ -144,6 +165,7 @@ public class PayrollTest {
         sct.execute();
         ServiceCharge sc = af.getServiceCharge(DateTime.parse("2001-11-01"));
         assertNotNull(sc);
+        //校验是否服务费用加入到协会从属关系中
         assertEquals(12.95, sc.getAmount(), .001);
     }
 
@@ -152,28 +174,37 @@ public class PayrollTest {
         int empId = 2;
         AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
         t.execute();
+
+        //修改名字事务
         ChangeNameTransaction cnt = new ChangeNameTransactionImpl(empId, "Bob");
         cnt.execute();
         Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
         assertNotNull(e);
+        //校验
         assertEquals("Bob", e.getName());
     }
 
     @Test
     public void changeHourlyTransaction() {
+        //创建销售
         int empId = 3;
         AddCommissionedEmployee t = new AddCommissionedEmployeeImpl(empId, "Lance", "Home",
                 2500.0, 3.2);
         t.execute();
+        //修改雇员类别为hourly
         ChangeHourlyTransaction cht = new ChangeHourlyTransactionImpl(empId, 27.52);
         cht.execute();
+
         Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
         assertNotNull(e);
+
+        //判读是否修改为类别
         PaymentClassification pc = e.getClassification();
         assertNotNull(pc);
         assertTrue(pc instanceof HourlyClassification);
         HourlyClassification hc = (HourlyClassification) pc;
         assertEquals(27.52, hc.getHourlyRate(), .001);
+        //是否修改支付安排
         PaymentSchedule ps = e.getSchedule();
         assertTrue(ps instanceof WeeklySchedule);
         WeeklySchedule ws = (WeeklySchedule) ps;
@@ -185,11 +216,14 @@ public class PayrollTest {
         int memberId = 7734;
         AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
         t.execute();
+
+        //修改成员事务, 把该雇员放入协会中
         ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 99.42);
         cmt.execute();
         Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
         assertNotNull(e);
 
+        //核实是否成员绑定了UnionAffiliation, 该UnionAffiliation具有正确的会费
         Affiliation af = e.getAffiliation();
         assertNotNull(af);
         assertTrue(af instanceof UnionAffiliation);
@@ -353,6 +387,7 @@ public class PayrollTest {
         assertEquals(9.42 + 19.42, pc.getDeductions(), .001);
         assertEquals((8 * 15.42) - (9.42 + 19.42), pc.getNetPay(), .001);
     }
+
     @Test
     public void serviceChargesSpanningMultiplePayPeriods() {
         int empId = 1;
@@ -380,7 +415,7 @@ public class PayrollTest {
         assertEquals(8 * 15.24, pc.getGrossPay(), .001);
         assertEquals("Hold", pc.getField("Disposition"));
         assertEquals(9.42 + 19.42, pc.getDeductions(), .001);
-        assertEquals((8 * 15.24)- (9.42 + 19.42), pc.getNetPay(),.001);
+        assertEquals((8 * 15.24) - (9.42 + 19.42), pc.getNetPay(), .001);
     }
 
     public void validatePaycheck(PaydayTransaction pt, int empId, DateTime payDate, double pay) {

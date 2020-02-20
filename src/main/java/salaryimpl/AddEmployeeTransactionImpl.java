@@ -1,6 +1,7 @@
 package salaryimpl;
 
 /**
+ * 增加雇员抽象类
  * @author wusd
  * @date 2020/2/15 22:48
  */
@@ -18,6 +19,10 @@ public abstract class AddEmployeeTransactionImpl implements AddEmployeeTransacti
         this.address = address;
     }
 
+    /**
+     * 使用Template Method方法
+     * 调用抽象方法.
+     */
     @Override
     public void execute() {
         PaymentClassification pc = getClassification();

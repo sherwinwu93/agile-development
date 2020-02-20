@@ -1,20 +1,22 @@
 package salaryimpl;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.joda.time.DateTime;
 
-import java.util.Date;
-
 /**
+ * 时间登记卡类
+ * 只是一个数据类
  * @author wusd
  * @date 2020/2/17 13:50
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class TimeCard {
+    //请注意,由于java类库的便利.实际上应该先采用基本类型代替
     private DateTime date;
     private double hours;
+
+    public TimeCard(DateTime date, double hours) {
+        this.date = date;
+        this.hours = hours;
+    }
 }

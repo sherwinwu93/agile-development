@@ -1,6 +1,7 @@
 package salaryimpl;
 
 /**
+ * 增加月薪员工具体实现类
  * @author wusd
  * @date 2020/2/15 23:53
  */

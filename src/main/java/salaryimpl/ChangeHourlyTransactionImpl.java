@@ -12,11 +12,18 @@ public class ChangeHourlyTransactionImpl extends ChangeClassificationTransaction
         this.hourlyRate = hourlyRate;
     }
 
+    /**
+     * 返回钟点类别
+     */
     @Override
     public PaymentClassification getClassification() {
         return new HourlyClassification(hourlyRate);
     }
 
+    /**
+     * 返回每周计划
+     * @return
+     */
     @Override
     public PaymentSchedule getSchedule() {
         return new WeeklySchedule();

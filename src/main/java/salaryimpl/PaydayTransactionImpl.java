@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 发薪日事务类
  * @author wusd
  * @date 2020/2/19 12:07
  */

@@ -1,6 +1,7 @@
 package salaryimpl;
 
 /**
+ * template method
  * @author wusd
  * @date 2020/2/18 14:31
  */

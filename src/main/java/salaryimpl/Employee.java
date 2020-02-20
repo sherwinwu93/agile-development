@@ -3,6 +3,8 @@ package salaryimpl;
 import lombok.Data;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 /**
  * @author wusd
  * @date 2020/2/15 22:51
@@ -15,6 +17,8 @@ public class Employee {
     private PaymentClassification classification;
     private PaymentSchedule schedule;
     private PaymentMethod method;
+    //无法识别从属关系的明确种类.多态解决了这个两难问题.
+//    private List<Affiliation> affiliations;
     private Affiliation affiliation;
     private DateTime payDate;
 

@@ -1,7 +1,5 @@
 package salaryimpl;
 
-import lombok.Data;
-
 /**
  * @author wusd
  * @date 2020/2/16 1:02
