@@ -4,11 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import java.util.Date;
-
 import static org.junit.Assert.*;
 
 /**
+ * 测试用例
+ *
+ * 这些测试用例代码是以增量方式编写.下面的代码结构是逐个通过测试用例的过程演化而来的.
  * @author wusd
  * @date 2020/2/15 21:50
  */
@@ -52,8 +53,8 @@ public class PayrollTest {
         assertTrue(StringUtils.equals("John", e.getName()));
 
         PaymentClassification pc = e.getClassification();
-        assertTrue(pc instanceof HourlyClassification);
-        HourlyClassification hc = (HourlyClassification) pc;
+        assertTrue(pc instanceof HourlyClassificationImpl);
+        HourlyClassificationImpl hc = (HourlyClassificationImpl) pc;
         assertEquals(1.0, hc.getHourlyRate(), .001);
 
         PaymentSchedule ps = e.getSchedule();
@@ -132,8 +133,8 @@ public class PayrollTest {
         assertNotNull(e);
 
         PaymentClassification pc = e.getClassification();
-        assertTrue(pc instanceof HourlyClassification);
-        HourlyClassification hc = (HourlyClassification) pc;
+        assertTrue(pc instanceof HourlyClassificationImpl);
+        HourlyClassificationImpl hc = (HourlyClassificationImpl) pc;
         //检查类别中是否有时间卡
         TimeCard tc = hc.getTimeCard(date);
         assertNotNull(tc);
@@ -201,8 +202,8 @@ public class PayrollTest {
         //判读是否修改为类别
         PaymentClassification pc = e.getClassification();
         assertNotNull(pc);
-        assertTrue(pc instanceof HourlyClassification);
-        HourlyClassification hc = (HourlyClassification) pc;
+        assertTrue(pc instanceof HourlyClassificationImpl);
+        HourlyClassificationImpl hc = (HourlyClassificationImpl) pc;
         assertEquals(27.52, hc.getHourlyRate(), .001);
         //是否修改支付安排
         PaymentSchedule ps = e.getSchedule();
@@ -234,14 +235,21 @@ public class PayrollTest {
         assertTrue(e == member);
     }
 
+    /**
+     * 从无足轻重的测试用例开始,一步步编写出更加复杂的测试用例.
+     * todo 测试优先设计的增量性
+     */
     @Test
     public void paySingleSalariedEmployee() {
+        //当月的最后一天对雇员进行支付薪水
         int empId = 1;
         AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
         t.execute();
         DateTime payDate = DateTime.parse("2001-11-30");
-        PaydayTransaction pt = new PaydayTransactionImpl();
+        PaydayTransaction pt = new PaydayTransactionImpl(payDate);
         pt.execute();
+
+        //校验是否支付薪水
         Paycheck pc = pt.getPaycheck(empId);
         assertNotNull(pc);
         assertTrue(pc.getPayDate().equals(payDate));
@@ -253,27 +261,38 @@ public class PayrollTest {
 
     @Test
     public void paySingleSalariedEmployeeOnWrongDate() {
+        //非当月最后一日执行程序
         int empId = 1;
         AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
         t.execute();
         DateTime payDate = DateTime.parse("2001-11-29");
         PaydayTransaction pt = new PaydayTransactionImpl(payDate);
         pt.execute();
+
+        //校验不支付薪水
         Paycheck pc = pt.getPaycheck(empId);
-        assertNotNull(pc);
+        assertNull(pc);
     }
 
+    /**
+     * 最简单的测试用例.没有增加timeCards
+     */
     @Test
     public void paySingleHourlyEmployeeNoTimeCards() {
+        DateTime payDate = DateTime.parse("2001-11-09");
         int empId = 2;
         AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.25);
         t.execute();
-        DateTime payDate = DateTime.parse("2001-11-09");
+        //发薪日事务
         PaydayTransaction pt = new PaydayTransactionImpl(payDate);
         pt.execute();
+        //校验薪水
         validatePaycheck(pt, empId, payDate, 0.0);
     }
 
+    /**
+     * 一次timeCard
+     */
     @Test
     public void paySingleHourlyEmployeeOneTimeCard() {
         int empId = 2;
@@ -288,6 +307,9 @@ public class PayrollTest {
         validatePaycheck(pt, empId, payDate, 30.5);
     }
 
+    /**
+     * 多次TimeCard
+     */
     @Test
     public void paySingleHourlyEmployeeOvertimeOneTimeCard() {
         int empId = 2;
@@ -333,6 +355,10 @@ public class PayrollTest {
         pt.execute();
     }
 
+    /**
+     * 证实系统只为支付期内的时间卡对雇员进行支付薪水.
+     * 系统会忽略其它支付期内的时间卡.
+     */
     @Test
     public void paySingleHourlyEmployeeWithTimeCardsSpanningTwoPayPeriods() {
         int empId = 2;
@@ -351,19 +377,29 @@ public class PayrollTest {
     }
 
     @Test
-    public void salariedSalariedUnionMemberDues() {
+    public void salariedUnionMemberDues() {
+        //增加个带薪雇员
         int empId = 1;
         AddSalariedEmployee t = new AddSalariedEmployeeImpl(empId, "Bob", "Home", 1000.00);
         t.execute();
+
+        //转变成协会成员
         int memberId = 7734;
         ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 9.42);
         cmt.execute();
+
+        //支付该雇员薪水
         DateTime payDate = DateTime.parse("2001-11-30");
         PaydayTransaction pt = new PaydayTransactionImpl(payDate);
         pt.execute();
-        validatePaycheck(pt, empId, payDate, 1000.00);
+        //确保从雇员的薪水中扣除了会费
+        //最后一行中的0,用什么来代替.问问客户希望如何去做.
+        validatePaycheck(pt, empId, payDate, 1000.00 - 0);
     }
 
+    /**
+     * 证实服务费用被正确地扣除.
+     */
     @Test
     public void hourlyUnionMemberServiceCharge() {
         int empId = 1;
@@ -388,14 +424,20 @@ public class PayrollTest {
         assertEquals((8 * 15.42) - (9.42 + 19.42), pc.getNetPay(), .001);
     }
 
+    /**
+     * 证实当前支付期间外的服务费用没有被扣除.
+     */
     @Test
     public void serviceChargesSpanningMultiplePayPeriods() {
+        //增加协会成员
         int empId = 1;
         AddHourlyEmployee t = new AddHourlyEmployeeImpl(empId, "Bill", "Home", 15.24);
         t.execute();
         int memberId = 7734;
         ChangeMemberTransaction cmt = new ChangeMemberTransactionImpl(empId, memberId, 9.42);
         cmt.execute();
+
+        //登记服务费用
         DateTime earlyDate = DateTime.parse("2001-11-02");
         DateTime payDate = DateTime.parse("2001-11-09");
         DateTime lateDate = DateTime.parse("2001-11-16");
@@ -405,8 +447,11 @@ public class PayrollTest {
         sctEarly.execute();
         ServiceChargeTransaction sctLate = new ServiceChargeTransactionImpl(memberId, lateDate, 200.00);
         sctLate.execute();
+
+        //登记时间卡
         TimeCardTransaction tct = new TimeCardTransactionImpl(payDate, 8.0, empId);
         tct.execute();
+        //发薪
         PaydayTransaction pt = new PaydayTransactionImpl(payDate);
         pt.execute();
         Paycheck pc = pt.getPaycheck(empId);
