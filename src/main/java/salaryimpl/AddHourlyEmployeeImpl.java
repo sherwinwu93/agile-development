@@ -14,7 +14,7 @@ public class AddHourlyEmployeeImpl extends AddEmployeeTransactionImpl implements
 
     @Override
     public PaymentClassification getClassification() {
-        return new HourlyClassification(hourlyRate);
+        return new HourlyClassificationImpl(hourlyRate);
     }
 
     @Override

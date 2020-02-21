@@ -28,6 +28,11 @@ public class UnionAffiliation implements Affiliation {
 
     }
 
+    /**
+     * 计算雇员的会费.
+     * @param pc
+     * @return
+     */
     @Override
     public double calculateDeductions(Paycheck pc) {
         double totalDues = 0;

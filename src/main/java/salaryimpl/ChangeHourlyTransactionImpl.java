@@ -17,7 +17,7 @@ public class ChangeHourlyTransactionImpl extends ChangeClassificationTransaction
      */
     @Override
     public PaymentClassification getClassification() {
-        return new HourlyClassification(hourlyRate);
+        return new HourlyClassificationImpl(hourlyRate);
     }
 
     /**

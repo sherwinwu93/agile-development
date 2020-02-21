@@ -3,6 +3,7 @@ package salaryimpl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author wusd
@@ -48,7 +49,7 @@ public class PayrollDatabaseImpl implements PayrollDatabase {
     }
 
     @Override
-    public List<Employee> getAllEmployeeIds(List<Integer> empIds) {
+    public List<Integer> getAllEmployeeIds(List<Integer> empIds) {
         return null;
     }
 

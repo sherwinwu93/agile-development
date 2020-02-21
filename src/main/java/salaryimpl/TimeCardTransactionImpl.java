@@ -27,8 +27,8 @@ public class TimeCardTransactionImpl implements TimeCardTransaction {
         Employee e = PayrollDatabaseImpl.instance.getEmployee(empId);
         if (e != null) {
             PaymentClassification pc = e.getClassification();
-            if (pc instanceof HourlyClassification) {
-                HourlyClassification hc = (HourlyClassification) pc;
+            if (pc instanceof HourlyClassificationImpl) {
+                HourlyClassificationImpl hc = (HourlyClassificationImpl) pc;
                 hc.addTimeCard(new TimeCard(date, hours));
             } else {
                 //开始只使用简单的RuntimeException.在对实际异常有一定了解后.再回来创建有意义的异常类.

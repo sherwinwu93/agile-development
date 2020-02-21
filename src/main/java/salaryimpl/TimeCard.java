@@ -6,6 +6,8 @@ import org.joda.time.DateTime;
 /**
  * 时间登记卡类
  * 只是一个数据类
+ *
+ * todo 考虑一下允许周末登记时间卡,并正确计算加班时间的情况
  * @author wusd
  * @date 2020/2/17 13:50
  */

@@ -10,11 +10,6 @@ public abstract class ChangeEmployeeTransactionImpl implements ChangeEmployeeTra
     public ChangeEmployeeTransactionImpl(int empId) {
         this.empId = empId;
     }
-//
-//    @Override
-//    public void change(Employee e) {
-//
-//    }
 
     /**
      * template method模式的结构

@@ -30,13 +30,22 @@ public class Employee {
     public boolean isPayDate(DateTime payDate) {
         return schedule.isPayDate(payDate);
     }
+
+    /**
+     * 计算并发送所有雇员支付信息的通用算法.
+     * 其中大量使用了Strategy模式.所有的计算细节都被推迟到所包含的策略类:classification,affiliation以及method中
+     * @param pc: 薪水
+     */
     public void payday(Paycheck pc) {
 //        DateTime payDate = pc.getPayPeriodEndDate();
         double grossPay = classification.calculatePay(pc);
         double deductions = affiliation.calculateDeductions(pc);
         double netPay = grossPay - deductions;
+        //工资总额
         pc.setGrossPay(grossPay);
+        //减去金额
         pc.setDeductions(deductions);
+        //实付金额
         pc.setNetPay(netPay);
         method.pay(pc);
     }

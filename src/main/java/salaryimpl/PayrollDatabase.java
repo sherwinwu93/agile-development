@@ -1,6 +1,7 @@
 package salaryimpl;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 数据库是实现细节.尽可能地推迟有关这些细节的决策
@@ -14,6 +15,6 @@ public interface PayrollDatabase {
     void addUnionMember(int empId, Employee employee);
     void removeUnionMember(int empId);
     Employee getUnionMember(int empId);
-    List<Employee> getAllEmployeeIds(List<Integer> empIds);
+    List<Integer> getAllEmployeeIds(List<Integer> empIds);
     void clear();
 }
